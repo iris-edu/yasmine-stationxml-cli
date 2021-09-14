@@ -1,0 +1,14 @@
+Operator:
+  agency: 'UCSC'
+  contacts:
+    - person:
+        names: 
+          - 'Dan Sampson'
+          - 'Eli ?'
+        agencies:
+          - 'University of California, Santa Cruz'
+        emails:
+          - 'd.sampson@ucsc.edu'
+        phones:
+          - (508)555-5555
+

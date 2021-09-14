@@ -1,0 +1,13 @@
+DataAvailability:
+  # start is UTCDateTime
+  # end is UTCDateTime
+  # spans = [] of DataAvailabilitySpan
+  start: '2006-06-01T20:00:01.000000Z'
+  end: '2006-06-20T20:00:01.000000Z'
+  spans:
+    #- DataAvailabilitySpan:
+    - start: '2006-06-10T20:00:01.000000Z'
+      end: '2006-06-15T20:00:01.000000Z'
+      number_of_segments: 3
+      maximum_time_tear: .01
+

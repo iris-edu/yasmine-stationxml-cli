@@ -1,0 +1,12 @@
+Equipment:
+  type: 'seismometer'
+  description: 'Broadband seismometer'
+  manufacturer: 'Streckeisen'
+  model: 'STS-2'
+  serial_number: 'S/N T1456'
+  installation_date: '2006-06-01T20:00:01.000000Z'
+  removal_date: '2016-06-01T20:00:01.000000Z'
+  calibration_dates:
+    - '2008-01-01T20:00:01.000000Z'
+    - '2010-01-01T20:00:01.000000Z'
+    - '2012-01-01T20:00:01.000000Z'

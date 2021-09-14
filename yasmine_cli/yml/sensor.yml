@@ -1,0 +1,6 @@
+Equipment:
+  type: 'seismometer'
+  description: 'midband seismometer (10s - 100Hz)'
+  manufacturer: 'Geobit'
+  model: 'SR32i'
+  serial_number: 'S/N XXXXXXXX'

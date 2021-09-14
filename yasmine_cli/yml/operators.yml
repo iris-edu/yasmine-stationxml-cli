@@ -1,0 +1,28 @@
+Operators:
+  - Operator:
+      agency: 'United States Geological Survey, USGS'
+      contacts:
+        - person:
+            names: 
+              - 'Adam Ringler'
+              - 'Tyler Storm'
+            agencies:
+              - 'Albuquerque Seismic Lab'
+            emails:
+              - 'aringler@usgs.gov'
+            phones:
+              - (508)555-5555
+      website: http://google.com
+  - Operator:
+      agency: 'Instrument Software Technologies, Inc'
+      contacts:
+        - person:
+            names: 
+              - 'Sid Hellman'
+              - 'Paul Friberg'
+            agencies:
+              - 'ISTI'
+            emails:
+              - 'sid.hellman@isti.com'
+            phones:
+              - (508)555-5555

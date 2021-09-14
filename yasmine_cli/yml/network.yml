@@ -1,0 +1,5 @@
+Network:
+  code: 'G'
+  description: 'This is an added network'
+  start_date: '2006-06-30T20:00:01.000000Z'
+  end_date:   '2399-12-31T23:59:59.000000Z'

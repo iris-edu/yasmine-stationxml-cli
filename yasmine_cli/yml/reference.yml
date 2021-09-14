@@ -1,0 +1,3 @@
+ExternalReference:
+  uri: 'http://address/of/some/report'
+  description: 'Some report of external reference'

@@ -1,0 +1,8 @@
+Station:
+  code: 'MIKE'
+  description: 'This is an added station'
+  start_date: '2006-06-30T20:00:01.000000Z'
+  end_date:   '2399-12-31T23:59:59.000000Z'
+  latitude:     34.945911
+  longitude:  -106.457199
+  elevation: 1820.0

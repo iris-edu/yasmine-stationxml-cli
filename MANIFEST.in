@@ -1,0 +1,18 @@
+include AUTHORS.rst
+include CONTRIBUTING.rst
+include HISTORY.rst
+include LICENSE
+include README.rst
+
+recursive-include tests *
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+
+recursive-include docs *.rst conf.py Makefile make.bat
+include scripts/run.sh
+include scripts/Test.xml
+include scripts/config.yml
+
+#include versioneer.py
+include yasmine_cli/_version.py
+include yasmine_cli/config.yml

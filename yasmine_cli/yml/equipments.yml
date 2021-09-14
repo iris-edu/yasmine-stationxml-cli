@@ -1,0 +1,21 @@
+Equipments:
+  - Equipment:
+      type: 'seismometer'
+      description: 'Broadband seismometer'
+      manufacturer: 'Streckeisen'
+      model: 'STS-2'
+      serial_number: 'S/N T1456'
+      installation_date: '2006-06-01T20:00:01.000000Z'
+      removal_date: None
+      calibration_dates: 
+          - '2006-06-01T20:00:01.000000Z'
+          - '2007-06-01T20:00:01.000000Z'
+          - '2009-06-01T20:00:01.000000Z'
+  - Equipment:
+      type: 'datalogger'
+      description: None
+      manufacturer: 'Quanterra'
+      model: 'Q-680'
+      serial_number: 'S/N ABCD'
+      installation_date: '2006-06-01T20:00:01.000000Z'
+      removal_date: None

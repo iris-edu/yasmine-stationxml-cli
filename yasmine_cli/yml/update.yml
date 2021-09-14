@@ -1,0 +1,25 @@
+networks:
+    - network:
+        code: 'IUXY'
+        #description: 'This is just a test network'
+        #startdate: 1918-06-30T20:00:01
+        #enddate:   2688-06-30T20:00:01
+        stations:
+            - station:
+                #code: ANMO
+                startdate: 2006-06-30T20:00:01
+                enddate:   2399-12-31T23:59:59
+                latitude:     34.945911
+                longitude:  -106.457199
+                elevation: 1820.0
+                site: 'Albuquerque, New Mexico, USA'
+
+                operator:
+                  Agency: 'United States Geological Survey, USGS'
+                  Contact:
+                      Name:   'Adam Ringler'
+                      Agency: 'Albuquerque Seismic Lab'
+                      Email:  'aringler@usgs.gov'
+                      Phone:  '508.555.5555'
+                  WebSite:
+
