@@ -59,13 +59,11 @@ Note that the version number may change.
 Current version is 0.0.5 (major.minor.patch)
 
 
-3. Alternatively, you can clone the repository and install from there:
+3. Install directly from github repository:
 
   e.g.,
 
-      >git clone https@gitlab.isti.com:mhagerty/yasmine-cli.git
-      >cd yasmine-cli
-      >pip install .
+      >pip install git+https://github.com/iris-edu/yasmine-stationxml-cli.git
 
 
 Once you have installed it, you should be able to run it as a python module from any directory.
