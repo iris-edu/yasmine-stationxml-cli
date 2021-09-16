@@ -66,6 +66,9 @@ Current version is 0.0.5 (major.minor.patch)
       >pip install git+https://github.com/iris-edu/yasmine-stationxml-cli.git
 
 
+
+### Usage
+
 Once you have installed it, you should be able to run it as a python module from any directory.
 
     >yasmine-cli
