@@ -1,8 +1,8 @@
 Comments:
   - Comment:
-      text: 'This is an example comment'
-      begin_effective_time: 2006-06-30T20:00:01.000000Z
-      end_effective_time: 2399-12-31T23:59:59.000000Z
+      value: 'This is an example comment'
+      begin_effective_time: '2006-06-30T20:00:01.000000Z'
+      end_effective_time: '2399-12-31T23:59:59.000000Z'
       authors:
         - author:
             names:
@@ -24,9 +24,9 @@ Comments:
             phones:  
                 - (508)555-5555
   - Comment:
-      text: 'This is a second comment'
-      begin_effective_time: 2012-06-30T20:00:01.000000Z
-      #end_effective_time: 2399-12-31T23:59:59.000000Z
+      value: 'This is a second comment'
+      begin_effective_time: '2012-06-30T20:00:01.000000Z'
+      #end_effective_time: '2399-12-31T23:59:59.000000Z'
       authors:
         - author:
             names:

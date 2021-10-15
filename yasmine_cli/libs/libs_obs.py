@@ -34,10 +34,18 @@ import copy
 import os
 import yaml
 
-from obspy.core.inventory.util import *
+from obspy.core.inventory.util import (DataAvailability, DataAvailabilitySpan,
+                                       Equipment, Operator, Person,
+                                       PhoneNumber, ExternalReference, Comment,
+                                       Site,
+                                       )
+
 from obspy.core.inventory.channel import Channel
 from obspy.core.inventory.network import Network
 from obspy.core.inventory.station import Station
+
+import importlib
+utils_module = importlib.import_module("obspy.core.inventory.util")
 
 import logging
 logger = logging.getLogger()
@@ -170,18 +178,23 @@ def check_field(field, value, level):
     return True
 
 def read_yml_file(configFile):
+    """
+    Read in configFile and use it to create some class
+        of obspy object (e.g., Network/Station/Channel/Operator/Comment)
 
-    '''
-    Read in configFile and use to create some sort of obspy object
-    e.g., Network/Station/Channel/Operator/Comment
-    return this
-    '''
+    Return the newly created obspy object
 
-    # ObsPy object that contains another ObsPy object
+    :param configFile: Name of yml file holding template for particular obspy object
+    :type configFile: str
+
+    :returns: obspy object made from template defined in configFile yml
+    :rtype: obspy object
+    """
+
+    # ObsPy objects that contain another ObsPy object
     obspy_complex_types = ['Operator', 'Comment', 'DataAvailability']
 
     return_obj = None
-    field = None
 
     with open(configFile, 'r') as ymlfile:
         cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
@@ -200,11 +213,10 @@ def read_yml_file(configFile):
 
         if obj_key in obspy_complex_types:
             func = 'obspy_%s' % obj_key.lower()
-            obj, field  = eval(func)(obj_dict)
         else:
-            obj, field  = obspy_simple_type(obj_dict, obj_key)
+            func = 'obspy_simple_type'
 
-        return obj, field
+        return eval(func)(obj_key, obj_dict)
 
     else:
         #for obj_dict in cfg[first_key][obj_key]:
@@ -213,87 +225,142 @@ def read_yml_file(configFile):
             obj_dict = item[obj_key]
             if obj_key in obspy_complex_types:
                 func = 'obspy_%s' % obj_key.lower()
-                obj, _unused  = eval(func)(obj_dict)
             else:
-                obj, _unused  = obspy_simple_type(obj_dict, obj_key)
+                func = 'obspy_simple_type'
+            return_list.append(eval(func)(obj_key, obj_dict))
 
-            return_list.append(obj)
         #field = obj_key.lower() + 's'
-        field = first_key.lower()
-        return return_list, field
+        field = obj_key.lower()
+        #return return_list, field
+        return return_list
 
-    return
 
+def obspy_comment(obj_key, obj_dict):
+    """
+    Create obspy Comment object from fields in obj_dict
 
-def obspy_person(person_dict):
-    phonenumbers = []
-    if 'phones' in person_dict and person_dict['phones']:
-        for phone in person_dict['phones']:
-            phonenumbers.append(PhoneNumber(phone[1:4], phone[5:], description=None))
-        person_dict['phones'] = phonenumbers
-    try:
-        obj = Person(**person_dict)
-    except TypeError as e:
-        logger.error("Caught: %s" % repr(e))
-        raise
-    return obj
+    :param obj_dict: fields needed to create an obspy Comment
+    :type obj_dict: dict
 
-def obspy_operator(operator_dict):
-
-    if 'agency' not in operator_dict or operator_dict['agency'] is None:
-        logger.error("Operator agency field is required! Please set in yml file")
-        exit(2)
-
-    if 'contacts' in operator_dict:
-        persons =[]
-        for contact in operator_dict['contacts']:
-            persons.append(obspy_person(contact['person']))
-        operator_dict['contacts'] = persons
-    try:
-        obj = Operator(**operator_dict)
-    except TypeError as e:
-        logger.error("Caught: %s" % repr(e))
-        raise
-    return obj, 'operator'
-
-def obspy_comment(comment_dict):
+    :returns: obspy Comment object
+    :rtype: obspy.core.inventory.util.Comment
+    """
 
     persons =[]
-    for contact in comment_dict['authors']:
-        persons.append(obspy_person(contact['author']))
+    for contact in obj_dict['authors']:
+        persons.append(obspy_person('Person', contact['author']))
 
-    comment_dict['authors'] = persons
-    comment_text = comment_dict.pop('text')
-    try:
-        obj = Comment(comment_text, **comment_dict)
-    except TypeError as e:
-        logger.error("Caught: %s" % repr(e))
-        raise
-    return obj, 'comment'
+    obj_dict['authors'] = persons
+    #comment_text = obj_dict.pop('text')
+    #obj_dict['value'] = comment_text
+    obj_dict['value'] = obj_dict.pop('value')
 
-def obspy_dataavailability(obj_dict):
+    return _make_obj(obj_key, obj_dict)
+
+
+def obspy_dataavailability(obj_key, obj_dict):
+    """
+    Create obspy DataAvailability object from fields in obj_dict
+
+    :param obj_dict: fields needed to create an obspy DataAvailability
+    :type obj_dict: dict
+
+    :returns: obspy DataAvailability object
+    :rtype: obspy.core.inventory.util.DataAvailability
+    """
+
     if 'spans' in obj_dict and obj_dict['spans']:
         spans = []
         for span in obj_dict['spans']:
             spans.append(DataAvailabilitySpan(**span))
         obj_dict['spans'] = spans
-    try:
-        obj = DataAvailability(**obj_dict)
-    except TypeError as e:
-        logger.error("Caught: %s" % repr(e))
-        raise
-    return obj, 'data_availability'
 
-def obspy_simple_type(obj_dict, obj_key=None):
-    '''
-    For ObsPy objects that don't contain any other Obspy objects, only simple fields
-    '''
+    return _make_obj(obj_key, obj_dict)
+
+
+def obspy_operator(obj_key, obj_dict):
+    """
+    Create obspy Operator object from fields in obj_dict
+
+    :param obj_dict: fields needed to create an obspy Operator
+    :type obj_dict: dict
+
+    :returns: obspy Operator object
+    :rtype: obspy.core.inventory.util.Operator
+    """
+
+    if 'agency' not in obj_dict or obj_dict['agency'] is None:
+        logger.error("Operator agency field is required! Please set in yml file")
+        exit(2)
+
+    if 'contacts' in obj_dict:
+        persons =[]
+        for contact in obj_dict['contacts']:
+            persons.append(obspy_person('Person', contact['person']))
+        obj_dict['contacts'] = persons
+
+    return _make_obj(obj_key, obj_dict)
+
+
+def obspy_person(obj_key, obj_dict):
+    """
+    Create obspy Person object from fields in obj_dict
+
+    :param obj_dict: fields needed to create an obspy Person
+    :type obj_dict: dict
+
+    :returns: obspy Person object
+    :rtype: obspy.core.inventory.util.Person
+    """
+
+    phonenumbers = []
+    if 'phones' in obj_dict and obj_dict['phones']:
+        for phone in obj_dict['phones']:
+            phonenumbers.append(PhoneNumber(phone[1:4], phone[5:], description=None))
+        obj_dict['phones'] = phonenumbers
+
+    return _make_obj(obj_key, obj_dict)
+
+
+def obspy_simple_type(obj_key, obj_dict):
+    """
+    Create instance of obspy object with class name = obj_key
+        (e.g., Network/Station/Channel/Operator/Comment/Equipment/etc)
+        using args contained in obj_dict
+
+    :param obj_dict: python dict with args for created obspy object
+    :type obj_dict: dict
+
+    :returns: obspy object of class obj_key
+    :rtype: obspy object
+    """
+
+    return _make_obj(obj_key, obj_dict)
+
+
+def _make_obj(obj_key, obj_dict):
+    """
+    Create instance of obspy object with class name = obj_key
+    using params in obj_dict
+
+    :param obj_key: str (=class name) of obspy class
+    :type obj_key: str
+
+    :param obj_dict: python dict with args for created obspy object
+    :type obj_dict: dict
+
+    :returns: obspy object of class obj_key
+    :rtype: obspy object
+    """
+
     try:
+        #obj = getattr(utils_module, obj_key)(**obj_dict)
         obj = eval(obj_key)(**obj_dict)
     except TypeError as e:
         logger.error("Caught: %s" % repr(e))
         raise
-    return obj, obj_key.lower()
+    #return obj, obj_key.lower()
+    return obj
 
 
 # MTH: Everything below here is a quick hack to override the hard-coded

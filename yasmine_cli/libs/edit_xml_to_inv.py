@@ -220,9 +220,12 @@ def plot_responses(inventory, plot_dir):
         for station in network.stations:
             for channel in station.channels:
                 sampling_rate = channel.sample_rate if channel.sample_rate > 0 else 100.
+
                 if channel.start_date is not None:
+                    start = channel.start_date.datetime.strftime('%Y-%m-%dT%H:%M:%S')
+                    end = channel.end_date.datetime.strftime('%Y-%m-%dT%H:%M:%S') if channel.end_date else None
                     label = "%s.%s.%s.%s.%s-%s" % (network.code, station.code, channel.code,
-                                                      channel.location_code, channel.start_date, channel.end_date)
+                                                      channel.location_code, start, end)
                 else:
                     label = "%s.%s.%s.%s" % (network.code, station.code, channel.code,
                                                    channel.location_code)
@@ -239,6 +242,7 @@ def plot_responses(inventory, plot_dir):
                                                axes=None, outfile=outfile)
 
                 else:
+                    print("MTH: label=%s" % label)
                     fig = channel.response.plot(min_freq, output="VEL", unwrap_phase=False,
                                                 sampling_rate=sampling_rate, label=label,
                                                 outfile=outfile)
@@ -791,8 +795,8 @@ def overlapping_epochs(epoch_list):
                        Pre-sorted by start_date
     :type epoch_list: list
 
-    :returns: True/False if overlap found
-    :rtype: bool
+    :returns: 1 if overlap found else 0
+    :rtype: int
 
     :returns: List of overlap messages
     :rtype: list

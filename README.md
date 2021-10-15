@@ -59,15 +59,14 @@ Note that the version number may change.
 Current version is 0.0.5 (major.minor.patch)
 
 
-3. Install directly from github repository:
+3. Alternatively, you can clone the repository and install from there:
 
   e.g.,
 
-      >pip install git+https://github.com/iris-edu/yasmine-stationxml-cli.git
+      >git clone https@gitlab.isti.com:mhagerty/yasmine-cli.git
+      >cd yasmine-cli
+      >pip install .
 
-
-
-### Usage
 
 Once you have installed it, you should be able to run it as a python module from any directory.
 
@@ -146,7 +145,7 @@ Each one takes a slightly different form, e.g.,
 
 
 Internally, the flags are used to set the 'scnl_filter' (really NSLC
-since network.station.location.chanel, but anyway ...)
+since network.station.location.channel, but anyway ...)
 
 By default, if no --level_.. flag is set, the level is assumed to be "root" so that
 any field you wish to modify must be part of the StationXML/Obspy_inventory root:
@@ -159,19 +158,22 @@ If no --action is specified, the action will default to **update** (if
 --field and --value are specified) or to **select** (if not).
 
 #### 1. --action=add 
-In conjunction with --from_yml=/path/to/file.yml, this is
+In conjunction with --from_yml=yml:/path/to/file.yml, this is
  used to insert a new basenode object (network, station or channel).
+Note that the path to the yml template file is relative to the
+installation dir of yasmine-cli.
 
 For example, to add a new network to the StationXML from a yaml file in ./yml/network.yml:
 
-        >yasmine-cli --action=add --from_yml=./yml/network.yml --infiles=.. -o=.. 
-        
+        >yasmine-cli --action=add --from_yml=yml:yml/network.yml --infiles=.. -o=.. 
+
 Notice that it was not necessary to specify the --level_ in this case - A network can **only** go in the root
 level and this is the default level.
 
 Similarly, to add a new station to only the II network within a StationXML file:
 
-        >yasmine-cli --action=add --level_network=II --from_yml=./yml/station.yml --infiles=.. -o=.. 
+        >yasmine-cli --action=add --level_network=II --from_yml=yml:yml/station.yml --infiles=.. -o=.. 
+
 where now the level must be set (--level_network=* indicates *all* networks).
 
 #### 2. --action=delete
@@ -237,7 +239,11 @@ ObsPy Operator(), and the fields must match those needed for
 successful initializing of the particular ObsPy object.
 
 However, on the command line, all fields are lower-case, e.g:
---field=operator or --field=comments. 
+--field=operators or --field=comments. 
+Note that fields that can have multiple occurrences within
+the StationXML file (e.g., multiple Operator or Comment elements),
+are indicated on the command line using plural strings (comments,
+operators, etc).
 
 To see all allowable command-line fields for each level, do:
 
@@ -264,7 +270,7 @@ as well as one optional field (azimuth).  The user can add as
 many optional fields as desired, provided the names and types
 correspond to those ObsPy is expecting for this object.
 
-##### When the --field or --value is a list []
+### When the --field or --value is a list []
 
 If the expected field/value is a list (e.g., ObsPy expects Station.comments =
 [Comments]), then there are several scenarios, depending on syntax.
@@ -391,14 +397,17 @@ schema version shall be 1.1:
 
 Which works since StationXML v1.1 allows Network element to
 contain Operator element (or network.operator in the language of ObsPy).
+Alternatively, you may add the "--dont_validate" flag so that the code
+does not try to validate the xml against the 1.0 FDSN schema.
 
 
 ## More Examples
 
 Plot channel responses:
-  The following will pull only WES stations out of the input xml, will output the reduced stationxml to wes.xml and will output plots of all WES channels to ./zplot directory:
+  The following will create response plots for each channel of station
+WES and output them to the ./plot directory:
 
-    >yasmine-cli --level_station=*.WES --infile=data/NE.xml --plot_resp --plot_dir=zplot -o wes.xml
+    >yasmine-cli --level_station=*.WES --infile=data/NE.xml --plot_resp --plot_dir=zplot
 
 (the default --plot_dir is ".")
 
@@ -423,7 +432,7 @@ That is, these are 2 different actions, which could be explicitly specified on t
 
 However, --action is not required in these cases since yasmine-cli will try to figure it out from the other params present.
 
-Piping example:
+##### Piping example:
 
   This example 1) Changes all ANMO station codes to 'MIKE', 2) Changes the
   latitude of all CCM stations to 33.77, 3) Adds list of operators to all
@@ -445,59 +454,83 @@ Piping example:
   e.g., you may see the messages for run_B *before* the messages for run_A.
 
 
-Add a new Network
+##### Add a new Network
 
       >yasmine-cli --infiles=test.xml -o x.xml --action=add --from_yml=yml/network.yml --dont_validate
 
-Set all Network code(s)
+##### Set all Network code(s)
 
       >yasmine-cli --infiles=test.xml -o x.xml --field=code --value='XY' --level_network=*
 
-Add a list operators = [Operator] (from yaml file) to this Network:
+##### Add a list operators = [Operator] (from yaml file) to this Network:
 
       >yasmine-cli --infiles=x.xml -o y.xml --field=operators --value=yml:yml/operators.yml --level_network=XY
 
-Append a scalar Operator to this operators list (note operator.yml
-contains one Operator):
+##### Append a scalar Operator to this operators list (note operator.yml contains one Operator):
 
       >yasmine-cli --infiles=y.xml -o z.xml --field=operators --value=yml:yml/operator.yml --level_network=XY
 
-Replace the 2nd Operator with a new Operator (from yml):
+##### Replace the 2nd Operator with a new Operator (from yml):
 
       >yasmine-cli  --infiles=z.xml -o a.xml --field=operators[1] --value=yml:yml/operator.yml --level_network=XY
 
-Delete the 1st Operator:
+##### Delete the 1st Operator:
 
       >yasmine-cli  --infiles=z.xml -o a.xml --field=operators[0] --value=None --level_network=XY
 
-Delete the entire operators list (note deleting a list is equivalent to
-setting it to the empty list []):
+##### Delete the entire operators list (note deleting a list is equivalent to setting it to the empty list []):
 
       >yasmine-cli  --infiles=z.xml -o a.xml --field=operators --value=[] --level_network=XY
 
-Add an operator to every station in network 'IU'.
+##### Add an operator to every station in network 'IU'.
 
       >yasmine-cli --infile=Test.xml --level_station=IU.* --action=add --from_yml=yml/operator.yml
 
-Append a comment to every IU.ANMO channel epoch.
+##### Append a comment to every IU.ANMO channel epoch.
 
       >yasmine-cli --infile=TestX.xml --level_channel=*.ANMO.*.* --field=comments --value=yml:yml/comment.yml -o xx.xml 
 
-Update latitude on all II.ANMO station.
+##### Update latitude on all II.ANMO station.
 
       >yasmine-cli --infile=Test.xml --level_station=II.ANMO --field=latitude --value=75.12
 
-Update latitude on all II.ANMO channel epochs.
+##### Update latitude on all II.ANMO channel epochs.
 
       >yasmine-cli --infile=Test.xml --level_channel=II.ANMO.*.* --field=latitude --value=75.12
 
-Replace the 7th comment of the 128th channel epoch of the 5th station
-epoch with a comment from yaml file:
+##### Replace the 7th comment of the 128th channel epoch of the 5th station epoch with a comment from yaml file:
 
     >yasmine-cli --infiles=resources/ANMO.xml -o z.xml --field=comments[6] --value=yml:yml/comment.yml --level_channel=*.ANMO.10.VHZ --epoch_channel=128 --epoch_station=5
 
-Delete the 3rd comment of the 128th channel epoch of the 5th station
-epoch:
+##### Delete the 3rd comment of the 128th channel epoch of the 5th station epoch:
 
     >yasmine-cli --infiles=resources/ANMO.xml -o z.xml --field=comments[6] --value=yml:yml/comment.yml --level_channel=*.ANMO.10.VHZ --epoch_channel=128 --epoch_station=5
 
+##### If you need help figuring out how the station/channel epochs are numbered in your StationXML file:
+
+    >yasmine-cli --infiles=test_data/ANMO.xml -p           // Print out epochs
+
+```[File:test_data/ANMO.xml]
+  [Net:IU]
+    [Stn:ANMO] epoch[0]:1989-08-29T00:00:00.000000Z - 1995-07-14T00:00:00.000000Z
+      [Chn:BCI.--] epoch[0]:1989-08-29T00:00:00.000000Z - 1995-02-01T00:00:00.000000Z
+      [Chn:BCI.--] epoch[1]:1995-02-01T00:00:00.000000Z - 1995-07-14T00:00:00.000000Z
+      [Chn:BH1.--] epoch[2]:1995-03-28T21:15:00.000000Z - 1995-07-14T00:00:00.000000Z
+      [Chn:BH2.--] epoch[3]:1995-03-28T21:15:00.000000Z - 1995-07-14T00:00:00.000000Z
+      [Chn:BHE.--] epoch[4]:1989-08-29T00:00:00.000000Z - 1991-01-23T22:25:00.000000Z
+      [Chn:BHE.--] epoch[5]:1991-01-23T22:25:00.000000Z - 1991-02-11T20:48:00.000000Z
+      [Chn:BHE.--] epoch[6]:1991-02-11T20:48:00.000000Z - 1995-02-01T00:00:00.000000Z
+      .
+      .
+      .
+      [Chn:VWS.--] epoch[119]:1992-07-17T00:00:00.000000Z - 1995-02-01T00:00:00.000000Z
+      [Chn:VWS.--] epoch[120]:1995-02-01T00:00:00.000000Z - 1995-07-14T00:00:00.000000Z
+    [Stn:ANMO] epoch[1]:1995-07-14T00:00:00.000000Z - 2000-10-19T16:00:00.000000Z
+      [Chn:BCI.--] epoch[0]:1995-07-14T00:00:00.000000Z - 1998-10-26T20:00:00.000000Z
+      [Chn:BH1.--] epoch[1]:1995-07-14T00:00:00.000000Z - 1996-07-16T16:00:00.000000Z
+      [Chn:BH1.--] epoch[2]:1996-07-29T00:00:00.000000Z - 1997-04-09T16:00:00.000000Z
+      [Chn:BH1.--] epoch[3]:1997-04-09T16:00:00.000000Z - 1998-10-26T20:00:00.000000Z
+      .
+      .
+      .
+```

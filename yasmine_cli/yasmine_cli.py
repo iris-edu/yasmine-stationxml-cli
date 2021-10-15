@@ -32,16 +32,15 @@
 
 import os
 import sys
-from sys import exit
 
 import logging
 logger = logging.getLogger()
 
 from . import installation_dir
 
+from .libs.libs_log import configure_logger
 from .libs.libs_obs import _write_stationxml
 from .libs.libs_util import processCmdLine, read_config
-from .libs.libs_log import configure_logger
 from .libs.edit_xml_to_inv import edit_xml_to_inv, plot_responses
 
 def main():
@@ -70,21 +69,14 @@ def main():
     logger.info("NET:%s STA:%s LOC:%s CHA:%s" % (scnl_filter.NET, scnl_filter.STA, scnl_filter.LOC, scnl_filter.CHA))
     logger.info("level=[%s] action=[%s]" % (args.level, args.action))
 
-    # Output the modified inventory/stationxml
     inv_new, schema_version = edit_xml_to_inv(args, scnl_filter)
 
     if args.plot_resp:
         plot_responses(inv_new, args.plot_dir)
 
     else:
-        if args.output:
-            outfile = args.output
-        else:
-            outfile = sys.stdout.buffer
-
-        validate = True
-        if args.dont_validate:
-            validate = False
+        outfile = args.output if args.output else sys.stdout.buffer
+        validate = False if args.dont_validate else True
 
         try:
             #inv_new.write(outfile, format='stationxml', validate=validate)

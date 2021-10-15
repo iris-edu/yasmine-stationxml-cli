@@ -176,7 +176,6 @@ Examples:
 #  the action is either 'update' or 'select':
     if not args.action and not args.print_epochs and not args.print_all:
         args.action = 'update'
-        args.update = 'set' # default
         if not args.field and not args.value:
             args.action = 'select'
 
@@ -195,10 +194,7 @@ Examples:
         args.update_root = True
 
     if args.action == 'update':
-    #if (not args.action or args.action == 'update') and not args.print and not args.print_all \
-       #and not args.select:
-        #args.action = 'update'
-        #args.update = 'set' # default
+        args.update = 'set' # default
 
         if args.field and args.value:
             if not args.level_network and not args.level_station and \
@@ -261,7 +257,7 @@ Examples:
                                  (fname, yml_file, os.getcwd(), TEMPLATE_DIR))
                     exit(2)
 
-                value, obj_field = read_yml_file(ymlfile)
+                value = read_yml_file(ymlfile)
 
             elif value[0] == '[' and value[-1] == ']': # value is a list of some sort
                     if len(value) <= 3: # --value=[] or --value=[ ]  // Set to empty list (to nullify list attribs)
@@ -364,7 +360,31 @@ Examples:
             logger.error("Example: --action=add --from_yml=yml/channel.yml --level_network=II.ANMO")
             exit(2)
         else:
-            value, field = read_yml_file(args.from_yml)
+            if args.from_yml[0:4] == 'yml:':  # Read/build value from yaml file
+                yml_file = args.from_yml[4:]
+                logger.info("Read value(s) from yml file:%s" % yml_file)
+
+                # First look for file in dir we're calling this script *from*
+                file_1 = os.path.join(os.getcwd(), yml_file)
+                # Else look for file in TEMPLATE_DIR
+                file_2 = os.path.join(TEMPLATE_DIR, os.path.basename(yml_file))
+
+                logger.debug("Try to read from file_1=[%s]" % file_1)
+                logger.debug("Try to read from file_2=[%s]" % file_2)
+                if os.path.exists(file_1):
+                    ymlfile = file_1
+                    logger.info("Found yml_file=[%s]" % ymlfile)
+                elif os.path.exists(file_2):
+                    ymlfile = file_2
+                    logger.info("Found yml_file=[%s]" % ymlfile)
+                else:
+                    logger.error("%s: Unable to find yml_file=[%s] file in either: cwd=%s -or: TEMPLATE_DIR=%s" %
+                                 (fname, yml_file, os.getcwd(), TEMPLATE_DIR))
+            else:
+                ymlfile = args.from_yml
+
+            value = read_yml_file(ymlfile)
+            field = value.__class__.__name__
             args.field = field
             args.value = value
             args.update_pair = (field, value)
