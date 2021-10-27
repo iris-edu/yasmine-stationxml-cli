@@ -232,6 +232,7 @@ class TestYasmine_cli(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        print("Call teardownclass")
         files = glob.glob('?.xml')
         for f in files:
             os.remove(f)
