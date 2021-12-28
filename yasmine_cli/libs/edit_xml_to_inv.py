@@ -556,7 +556,7 @@ def delete_base_node(xml_list, level, scnl_filter):
 
     if level == 'network':
         for xml_dict in xml_list:
-            if scnl_filter.NET in xml_dict['net_codes']:
+            if scnl_filter.NET in xml_dict['net_codes'].copy():
                 try:
                     logger.info("Delete network=%s" % scnl_filter.NET)
                     xml_dict['net_codes'].pop(scnl_filter.NET)
