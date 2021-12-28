@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 
+import logging
+logger = logging.getLogger()
+
 def plot_polynomial_resp(response, label=None, axes=None, outfile=None,
                          vmin=-20., vmax=20., dv=0.10):
     """
@@ -29,8 +32,8 @@ def plot_polynomial_resp(response, label=None, axes=None, outfile=None,
          to control this to limit plot range (somehow).
     """
 
-    if not response.instrument_polynomial or not isinstance(response.response_stages[0], PolynomialResponseStage):
-        logger.error("plot_polynomial_resp: response does not contain instrument_polynomial ",
+    if not response.instrument_polynomial or not response.response_stages or not isinstance(response.response_stages[0], PolynomialResponseStage):
+        logger.error("plot_polynomial_resp: response does not contain instrument_polynomial "
                      "and/or PolynomialResponseStage")
         return None
 
@@ -92,10 +95,10 @@ def plot_polynomial_resp(response, label=None, axes=None, outfile=None,
         ax2 = fig.add_subplot(212, sharex=ax1)
 
     label_kwarg = {}
-    # if label is not None:
-    #   label_kwarg['label'] = label
+    #if label is not None:
+       #label_kwarg['label'] = label
 
-    plt.suptitle(label)
+    plt.suptitle(label, size='small')
     plt.xlabel(xlabel)
     ax1.set_ylabel(ylabel)
     ax2.set_ylabel(y2label)

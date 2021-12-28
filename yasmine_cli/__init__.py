@@ -4,7 +4,7 @@ from __future__ import print_function
 
 __author__ = 'Mike Hagerty'
 __email__ = 'mhagerty@isti.com'
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 #__version__ = get_versions()['version']
 #del get_versions
 

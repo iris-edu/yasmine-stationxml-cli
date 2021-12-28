@@ -103,6 +103,20 @@ class TestYasmine_cli(unittest.TestCase):
         inv, schema_version = edit_xml_to_inv(args, scnl_filter)
         _write_stationxml(inv, args.output, validate=True, schema_version=schema_version)
 
+    def test_read_local_yml_template(self):
+        sys.argv = ['yasmine-cli', '--infiles=test_data/station.xml', '-o', 'z.xml',
+                    '--field=sensor', '--value=yml:./yml/sensor.yml',
+                    '--level_channel=*.*.*.*',
+                    ]
+        args, scnl_filter = processCmdLine('yasmine-cli')
+
+        inv, schema_version = edit_xml_to_inv(args, scnl_filter)
+        chan = inv[0][0][0]
+        self.assertEqual(chan.sensor.manufacturer, 'Geobit')
+        self.assertEqual(chan.sensor.serial_number, 'S/N 12345678')
+        self.assertEqual(chan.sensor.description, 'midband seismometer (10s - 100Hz) from local yml template')
+        _write_stationxml(inv, args.output, validate=True, schema_version=schema_version)
+
     def test_add_channel(self):
         sys.argv = ['yasmine-cli', '--infiles=test_data/Test.xml', '-o', '1.xml',
                     '--action=add', '--from_yml=yml:yml/channel.yml',
@@ -117,6 +131,16 @@ class TestYasmine_cli(unittest.TestCase):
                     '--action=add', '--from_yml=yml:yml/station.yml',
                     '--level_network=NE',
                     '--schema_version=1.1',
+                    ]
+        args, scnl_filter = processCmdLine('yasmine-cli')
+        inv, schema_version = edit_xml_to_inv(args, scnl_filter)
+        _write_stationxml(inv, args.output, validate=True, schema_version=schema_version)
+
+
+    def test_add_identifiers(self):
+        sys.argv = ['yasmine-cli', '--infiles=test_data/XX.xml', '-o', 'x.xml',
+                    '--field=identifiers', '--value=yml:yml/identifiers.yml',
+                    '--level_network=*',
                     ]
         args, scnl_filter = processCmdLine('yasmine-cli')
         inv, schema_version = edit_xml_to_inv(args, scnl_filter)

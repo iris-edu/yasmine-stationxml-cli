@@ -176,8 +176,10 @@ def edit_xml_to_inv(args, scnl_filter):
         else:
             update_field(xml_list, scnl_filter, args)
     elif args.action == 'select':
+        #print("action=select scnl_filter=[%s.%s.%s.%s]" % (scnl_filter.NET, scnl_filter.STA, scnl_filter.LOC, scnl_filter.CHA))
         #filter_xml(xml_list, args.level, scnl_filter)
         filter_xml(xml_list, scnl_filter)
+        #exit()
 
     # Output the modified inventory/stationxml
     inv_new = pack_xml_list_to_inv(xml_list)
@@ -236,13 +238,11 @@ def plot_responses(inventory, plot_dir):
                     #logger.warning("%s.%s.%s.%s has instrument_polynomial: "
                                 #"Polynomial response plot not yet supported" %
                                 #(network.code, station.code, channel.code, channel.location_code))
-                    label = "%s.%s.%s.%s polynomial response" % \
-                            (network.code, station.code, channel.code, channel.location_code)
+                    label += "\npolynomial response"
                     fig = plot_polynomial_resp(channel.response, label=label,
                                                axes=None, outfile=outfile)
 
                 else:
-                    print("MTH: label=%s" % label)
                     fig = channel.response.plot(min_freq, output="VEL", unwrap_phase=False,
                                                 sampling_rate=sampling_rate, label=label,
                                                 outfile=outfile)
@@ -267,7 +267,9 @@ def filter_xml(xml_list, scnl_filter):
 
     if scnl_filter.NET:
         for xml_dict in xml_list:
-            for net_code in xml_dict['net_codes']:
+            # Need to keep static copy of the keys to avoid 
+            #  RuntimeError: dictionary changed size during iteration:
+            for net_code in xml_dict['net_codes'].copy():
                 if net_code != scnl_filter.NET:
                     try:
                         logger.info("Ignore network=%s" % net_code)
@@ -280,6 +282,7 @@ def filter_xml(xml_list, scnl_filter):
     if scnl_filter.STA:
         for xml_dict in xml_list:
             for net_code, net_dict in xml_dict['net_codes'].items():
+                # list also makes copy of the keys:
                 for sta_code in list(net_dict['sta_codes'].keys()):
                     if sta_code != scnl_filter.STA:
                         try:
@@ -289,6 +292,41 @@ def filter_xml(xml_list, scnl_filter):
                             logger.error("Key not found:%s" % sta_code)
                     else:
                         logger.info("Sta:%s passed filter" % sta_code)
+
+    # At this point you've already filtered net_dict down by NET.STA
+
+    # CHA can be name or *.  LOC can be XX or * or '' (no location)
+    if scnl_filter.CHA or scnl_filter.LOC is not None:
+        for xml_dict in xml_list:
+            #print(xml_dict)
+            for net_code, net_dict in xml_dict['net_codes'].items():
+
+                new_dict = {}
+                new_dict['sta_codes'] = {}
+                new_dict['network'] = net_dict['network']
+
+                for sta_code, sta_epochs in net_dict['sta_codes'].items():
+                    stn_epochs = []
+                    if not scnl_filter.STA or scnl_filter.STA == sta_code:
+                        for station in sta_epochs:
+                            channel_epochs = []
+                            for ichn, channel in enumerate(station.channels):
+                                #print("Here scnl_filter.LOC=[%s]" % scnl_filter.LOC)
+                                if (scnl_filter.LOC is None or scnl_filter.LOC == channel.location_code) and \
+                                   (scnl_filter.CHA is None or scnl_filter.CHA == channel.code):
+                                    logger.info("Sta:%s Cha:%s Loc:%s %s-%s passed filter" %
+                                                (sta_code, channel.code, channel.location_code, channel.start_date, channel.end_date))
+                                    channel_epochs.append(channel)
+
+                            if channel_epochs:
+                                station.channels = channel_epochs
+                                stn_epochs.append(station)
+
+                    if stn_epochs:
+                        new_dict['sta_codes'][sta_code] = stn_epochs
+
+            xml_dict['net_codes'][net_code] = new_dict
+
 
     return
 
@@ -311,6 +349,7 @@ def update_root_field(xml_list, args):
             xml[field] = value
             logger.info("Update_root field:%s to value=[%s]" % (field, value))
     return
+
 
 def update_field(xml_list, scnl_filter, args):
     """
@@ -347,6 +386,12 @@ def update_field(xml_list, scnl_filter, args):
     '''
 
     def _set_field(basenodeobj, field):
+
+        # MTH: 2021-12-01: obspy v.1.2.2 has a bug in class Identifier @identifiers.setter
+        #                  It mistakenly validates identifier value against anyURI which is wrong:
+        if field == "identifiers":
+            basenodeobj.__setattr__(field, value)
+            return True
 
         if hasattr(basenodeobj, field):
             if args.update in {'list_modify', 'list_append'}:

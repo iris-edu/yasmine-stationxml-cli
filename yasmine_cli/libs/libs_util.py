@@ -172,6 +172,7 @@ Examples:
     if args.loglevel:
         logger.setLevel(string_to_logLevel(args.loglevel))
 
+
 # If no action set and we're not simpling printing out,
 #  the action is either 'update' or 'select':
     if not args.action and not args.print_epochs and not args.print_all:
@@ -286,6 +287,8 @@ Examples:
                                 except ValueError as err:
                                     logger.error("I give up: Unable to determine type of list elements in --value")
                                     exit(2)
+                        value = new_value
+
             else: # value is scalar:
                 try:
                     value = int(args.value)
@@ -391,7 +394,6 @@ Examples:
     elif args.action == 'delete':
         logger.info("Use delete to delete a basenode")
 
-
     scnl_filter = struct(NET=None, STA=None, CHA=None, LOC=None, STN_EPOCH=None, CHN_EPOCH=None, INDEX=None)
 
     if args.use_index:
@@ -458,7 +460,7 @@ Examples:
             fail = True
         else:
             for field in fields:
-                if not field.isalnum() and field != '*':
+                if not field.isalnum() and field != '*' and field != '--':
 
                     logger.info("Example: --level_channel=IU.ANMO.00.BHZ // Act on channel(s)=BHZ of loc=00 of sta=ANMO of net=IU")
                     logger.info("Example: --level_channel=IU.ANMO.00.*   // Act on channel(s)=*   of loc=00 of sta=ANMO of net=IU")
@@ -474,6 +476,7 @@ Examples:
         if sta == '*': sta = None
         if cha == '*': cha = None
         if loc == '*': loc = None
+        if loc == '--': loc = ''
 
         scnl_filter.NET = net
         scnl_filter.STA = sta

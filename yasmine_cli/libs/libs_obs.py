@@ -192,7 +192,8 @@ def read_yml_file(configFile):
     """
 
     # ObsPy objects that contain another ObsPy object
-    obspy_complex_types = ['Operator', 'Comment', 'DataAvailability']
+    #obspy_complex_types = ['Operator', 'Comment', 'DataAvailability']
+    obspy_complex_types = ['Operator', 'Comment', 'DataAvailability', 'Identifier']
 
     return_obj = None
 
@@ -234,6 +235,11 @@ def read_yml_file(configFile):
         #return return_list, field
         return return_list
 
+
+def obspy_identifier(obj_key, obj_dict):
+    # MTH: there is no Identifier class in obspy
+    #      so here we simple return string of value and append to list
+    return str(obj_dict)
 
 def obspy_comment(obj_key, obj_dict):
     """
