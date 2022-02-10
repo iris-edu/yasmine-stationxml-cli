@@ -4,6 +4,8 @@ Yasmine-cli is a command-line script for merging/editing stationXML metadata fil
 Initial development has been supported by Résif.
 Development and addition of new features is shared and agreed between IRIS and Résif.
 
+## Known issues and limitations
+
 Yasmine-cli only provides a minimum validation against the stationXML `.xsd` schema.
 For a proper validation, it should be used in complement with the dedicated [IRIS stationXML validator](https://github.com/iris-edu/stationxml-validator).
 
