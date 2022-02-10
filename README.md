@@ -2,12 +2,12 @@
 
 Yasmine-cli is a command-line script for merging/editing stationXML metadata files.
 Initial development has been supported by Résif.
-Development and addition of new features is shared and agreed between IRIS and Résif.
+Development and addition of new features is shared and agreed upon between IRIS and Résif.
 
 ## Known issues and limitations
 
-Yasmine-cli only provides a minimum validation against the stationXML `.xsd` schema.
-For a proper validation, it should be used in complement with the dedicated [IRIS stationXML validator](https://github.com/iris-edu/stationxml-validator).
+Yasmine-cli only provides a minimum level of validation against the stationXML `.xsd` schema.
+For a proper validation, it should be used in conjunction with the dedicated [IRIS stationXML validator](https://github.com/iris-edu/stationxml-validator).
 
 Even if we have performed a lot of tests, yasmine-cli is currently released in beta version and some bugs and limitations might still be found.
 
@@ -359,3 +359,10 @@ do something else):
 5. Scalar to None: Delete operators[2] from the operators list:
 
       --field=operators[2] --value=None --level_station=*.ANMO
+      
+      
+## More information
+* Incorporated Research Institutions for Seismology (IRIS) Data Services - https://ds.iris.edu
+* réseau sismologique et géodésique français (Résif) - https://www.resif.fr/
+* FDSN StationXML Manual - https://stationxml-doc.readthedocs.io/en/release-1.1.0/
+* FDSN StationXML Schema v1.1 - https://github.com/FDSN/StationXML/blob/v1.1/fdsn-station.xsd
