@@ -1,7 +1,13 @@
-# Yasmine-CLI 
+# Yasmine-CLI
 
-yasmine-cli is a command-line script for merging/editing stationxml files.
+Yasmine-cli is a command-line script for merging/editing stationXML metadata files.
+Initial development has been supported by Résif.
+Development and addition of new features is shared and agreed between IRIS and Résif.
 
+Yasmine-cli only provides a minimum validation against the stationXML `.xsd` schema.
+For a proper validation, it should be used in complement with the dedicated [IRIS stationXML validator](https://github.com/iris-edu/stationxml-validator).
+
+Even if we have performed a lot of tests, yasmine-cli is currently released in beta version and some bugs and limitations might still be found.
 
 ## Installation
 
@@ -43,10 +49,10 @@ There are a few different ways to obtain and install the code.
 
 https://pypi.org/project/yasmine-cli
 
-  
+
     >pip install yasmine-cli
 
-
+<!---
 2. You can manually download the latest python wheel (*.whl) or distribution (*.gz) from:
 
 https://gitlab.isti.com/mhagerty/yasmine-cli/-/package_files/3/download
@@ -57,14 +63,14 @@ and then install using pip:
 
 Note that the version number may change.
 Current version is 0.0.5 (major.minor.patch)
+--->
 
-
-3. Alternatively, you can clone the repository and install from there:
+2. You can clone the repository and install from there:
 
   e.g.,
 
-      >git clone https@gitlab.isti.com:mhagerty/yasmine-cli.git
-      >cd yasmine-cli
+      >git clone https://github.com/iris-edu/yasmine-stationxml-cli.git
+      >cd yasmine-stationxml-cli
       >pip install .
 
 
@@ -101,8 +107,57 @@ override the LOG_LEVEL with the command line option:
 
     >yasmine-cli ... --loglevel=ERROR ...
 
+## Usage
 
-## How It Works
+    usage: yasmine-cli    [-h | --help]
+                          [--level_network II | --level_station II.* | --level_channel II.ANMO.00.*]
+                          [--action [add/delete/update basenode]]
+                          [--epoch_station int] [--epoch_channel int]
+                          [--field FIELD] [--value VALUE | --from_yml fname.yml]
+                          [--infiles] [-o] [-p] [--print_all] [--dont_validate]
+                          [--schema_version ver] [--show_fields] [--plot_resp]
+                          [--plot_dir path]
+
+    optional arguments:
+      -h, --help            show this help message and exit
+
+    level options: [default=root is implied if no level set]:
+      --level_network II
+      --level_station II.*
+      --level_channel II.ANMO.00.*
+
+    action options: [default=update if no action set]:
+      --action [add/delete/update basenode]
+
+    epoch options: Use to filter down to epoch level:
+      --epoch_station int   station epoch index to filter on, eg, --epoch_station=1
+      --epoch_channel int   channel epoch index to filter on, eg, --epoch_channel=0
+
+    build options:
+      --field FIELD         field, key or attribute to update. eg, --field=Latitude or --field=comments[1]
+      --value VALUE         value of field, key or attribute to update. Ex.  --value=34.97 or --value=yml:/path/comment.yml
+      --from_yml fname.yml  Used to add new basenode object created from
+                            fname.yml. eg, --from_yml=/some/path/network.yml
+
+    other optional arguments:
+      --infiles             comma separated list of input xml files [default=stdin]
+      -o , --output         Name of output xml file [default=stdout]. eg, --output=foo.xml
+      -p, --print           Print out sorted Station/Channel epochs
+      --print_all           Print out sorted Station/Channel epochs + operator/comment lists
+      --dont_validate       Turn OFF StationXML validation on all inputs/outputs
+      --schema_version ver  {1.0, 1.1}
+      --show_fields         Print out allowable --field, + --value combinations
+      --plot_resp           Plot all channel responses
+      --plot_dir path       Path to dir to save plot responses
+
+    Examples:
+      >yasmine-cli --level_network=II --field=description --value='Network description' --infiles=...
+      >yasmine-cli --level_station=II.* --field=latitude --value=34.97 --infiles=...
+      >yasmine-cli --level_channel=II.ANMO.00.* --field=comments[0] --value=yml:/path/comment.yml --infiles=...
+      >yasmine-cli --level_network=* --action=add --from_yml=path/to/station.yml --infiles=...
+
+
+## Detailed usage
 
 An ObsPy Inventory object is essentially a container for a list of
 Networks and each of these is a container for a list of Stations, etc.
@@ -115,6 +170,7 @@ At the bottom of this dictionary are lists of Station(s) (=station epochs) which
 turn contain Channel(s) (=channel epochs), and each of these is sorted
 alphabetically and chronologically.
 
+More examples and details can be found in the [EXAMPLES](https://github.com/iris-edu/yasmine-stationxml-cli/blob/main/EXAMPLES.md) file.
 
 ### Filtering to find the right level [default=root]
 
@@ -125,7 +181,7 @@ yasmine-cli looks at two flags:
 
 The level flags (--level_network, --level_station, --level_channel) are
 mutually exclusive. Which one you select depends on what level the
-action should operate on. 
+action should operate on.
 
 Each one takes a slightly different form, e.g.,
 
@@ -157,7 +213,7 @@ yasmine-cli allows 4 basic actions: update, select, add, delete.
 If no --action is specified, the action will default to **update** (if
 --field and --value are specified) or to **select** (if not).
 
-#### 1. --action=add 
+#### 1. --action=add
 In conjunction with --from_yml=yml:/path/to/file.yml, this is
  used to insert a new basenode object (network, station or channel).
 Note that the path to the yml template file is relative to the
@@ -165,14 +221,14 @@ installation dir of yasmine-cli.
 
 For example, to add a new network to the StationXML from a yaml file in ./yml/network.yml:
 
-        >yasmine-cli --action=add --from_yml=yml:yml/network.yml --infiles=.. -o=.. 
+        >yasmine-cli --action=add --from_yml=yml:yml/network.yml --infiles=.. -o=..
 
 Notice that it was not necessary to specify the --level_ in this case - A network can **only** go in the root
 level and this is the default level.
 
 Similarly, to add a new station to only the II network within a StationXML file:
 
-        >yasmine-cli --action=add --level_network=II --from_yml=yml:yml/station.yml --infiles=.. -o=.. 
+        >yasmine-cli --action=add --level_network=II --from_yml=yml:yml/station.yml --infiles=.. -o=..
 
 where now the level must be set (--level_network=* indicates *all* networks).
 
@@ -182,7 +238,7 @@ This is used to delete a basenode object(s) at the indicated level.
 
 For example, to delete all the channels from station IU.ANMO:
 
-        >yasmine-cli --action=delete --level_station=IU.ANMO 
+        >yasmine-cli --action=delete --level_station=IU.ANMO
 
 #### 3. --action=select [default]
 
@@ -191,8 +247,8 @@ by --level_.
 
 To select (=filter all matching) stations where station.code == 'ANMO' and print to stdout:
 
-        >yasmine-cli  --level_station=IU.ANMO --infiles=data/II.xml 
-        
+        >yasmine-cli  --level_station=IU.ANMO --infiles=data/II.xml
+
 #### 4. --action=update [default]
 
 This is used to update (or insert if missing) the value of a basenode field
@@ -239,7 +295,7 @@ ObsPy Operator(), and the fields must match those needed for
 successful initializing of the particular ObsPy object.
 
 However, on the command line, all fields are lower-case, e.g:
---field=operators or --field=comments. 
+--field=operators or --field=comments.
 Note that fields that can have multiple occurrences within
 the StationXML file (e.g., multiple Operator or Comment elements),
 are indicated on the command line using plural strings (comments,
@@ -301,236 +357,3 @@ do something else):
 5. Scalar to None: Delete operators[2] from the operators list:
 
       --field=operators[2] --value=None --level_station=*.ANMO
-
-
-## Usage
-
-    usage: yasmine-cli    [-h | --help]
-                          [--level_network II | --level_station II.* | --level_channel II.ANMO.00.*]
-                          [--action [add/delete/update basenode]]
-                          [--epoch_station int] [--epoch_channel int]
-                          [--field FIELD] [--value VALUE | --from_yml fname.yml]
-                          [--infiles] [-o] [-p] [--print_all] [--dont_validate]
-                          [--schema_version ver] [--show_fields] [--plot_resp]
-                          [--plot_dir path]
-
-    optional arguments:
-      -h, --help            show this help message and exit
-
-    level options: [default=root is implied if no level set]:
-      --level_network II
-      --level_station II.*
-      --level_channel II.ANMO.00.*
-
-    action options: [default=update if no action set]:
-      --action [add/delete/update basenode]
-
-    epoch options: Use to filter down to epoch level:
-      --epoch_station int   station epoch index to filter on, eg, --epoch_station=1
-      --epoch_channel int   channel epoch index to filter on, eg, --epoch_channel=0
-
-    build options:
-      --field FIELD         field, key or attribute to update. eg, --field=Latitude or --field=comments[1]
-      --value VALUE         value of field, key or attribute to update. Ex.  --value=34.97 or --value=yml:/path/comment.yml
-      --from_yml fname.yml  Used to add new basenode object created from
-                            fname.yml. eg, --from_yml=/some/path/network.yml
-
-    other optional arguments:
-      --infiles             comma separated list of input xml files [default=stdin]
-      -o , --output         Name of output xml file [default=stdout]. eg, --output=foo.xml
-      -p, --print           Print out sorted Station/Channel epochs
-      --print_all           Print out sorted Station/Channel epochs + operator/comment lists
-      --dont_validate       Turn OFF StationXML validation on all inputs/outputs
-      --schema_version ver  {1.0, 1.1}
-      --show_fields         Print out allowable --field, + --value combinations
-      --plot_resp           Plot all channel responses
-      --plot_dir path       Path to dir to save plot responses
-    
-    Examples:
-      >yasmine-cli --level_network=II --field=description --value='Network description' --infiles=...
-      >yasmine-cli --level_station=II.* --field=latitude --value=34.97 --infiles=...
-      >yasmine-cli --level_channel=II.ANMO.00.* --field=comments[0] --value=yml:/path/comment.yml --infiles=...
-      >yasmine-cli --level_network=* --action=add --from_yml=path/to/station.yml --infiles=...
-    
-
-#### Some background on StationXML schema version and ObsPy
-When ObsPy (v1.2)  moved to StationXML v1.1, they hard-coded the output xml version to 1.1.
-We adapted ObsPy to allow the user to specify output xml version = 1.0.
-However, ObsPy v1.2 is not strictly backwards compatible with StationXML
-v1.0.
-For instance, in fdsn schema 1.1, both Network and Station can
-contain 0,..,n Operator elements, while in fdsn schema 1.0, only Station
-can contain Operator elements. 
-
-To understand how this affects the code, consider what happens when we
-try to assign --field=operator to a network element when the input
-StationXML version=1.0:
-
-    (yasmine) mth@Mikes-MBP [~/mth/python_pkgs/yasmine-cli]> yasmine-cli --infiles=data/NE.xml --field=operators --value=yml:yml/operators.yml --level_network=* --schema_version=1.0 -o x.xml
-    2020-03-19 15:00:00,766 [ INFO] Input schema_version=1.0
-    2020-03-19 15:00:00,766 [ INFO] Input files version:[1.0] --> Request output version:[1.0]
-    2020-03-19 15:00:00,766 [ INFO] Check file:data/NE.xml against schema_file:fdsn-schema/fdsn-station-1.0.xsd
-    2020-03-19 15:00:07,362 [ INFO] _write_stationxml: set output schema_version=[1.0]
-    Traceback (most recent call last):
-      File "yasmine-cli.py", line 576, in <module>
-        main()
-      File "yasmine-cli.py", line 143, in main
-    _write_stationxml(inv_new, outfile, validate=validate, schema_version=schema_version)
-      File "/Users/mth/mth/python_pkgs/yasmine-cli/libs/libs_obs.py", line 226, in _write_stationxml
-        raise Exception(msg)
-    Exception: The created file fails to validate.
-	    <string>:1:0:ERROR:SCHEMASV:SCHEMAV_ELEMENT_CONTENT: Element '{http://www.fdsn.org/xml/station/1}Operator': This element is not expected. Expected is one of ( {http://www.fdsn.org/xml/station/1}Comment, ##other{http://www.fdsn.org/xml/station/1}*, {http://www.fdsn.org/xml/station/1}TotalNumberStations, {http://www.fdsn.org/xml/station/1}SelectedNumberStations, {http://www.fdsn.org/xml/station/1}Station ).
-
-Note that the log specifies which schema version it is using to validate
-both the input and output xml files. Here, when we try to output the
-modified StationXML (with network.operator), the validation fails as it
-should.
-
-The solution, if we want network.operator, is to specify that the output
-schema version shall be 1.1:
-
-    (yasmine) mth@Mikes-MBP [~/mth/python_pkgs/yasmine-cli]> yasmine-cli --infiles=data/NE.xml --field=operators --value=yml:yml/operators.yml --level_network=* --schema_version=1.1 -o x.xml
-    2020-03-19 14:59:38,643 [ INFO] Input schema_version=1.0
-    2020-03-19 14:59:38,643 [ INFO] Input files version:[1.0] --> Request output version:[1.1]
-    2020-03-19 14:59:38,643 [ INFO] Check file:data/NE.xml against schema_file:fdsn-schema/fdsn-station-1.1.xsd
-    2020-03-19 14:59:44,684 [ INFO] _write_stationxml: set output schema_version=[1.1]
-
-Which works since StationXML v1.1 allows Network element to
-contain Operator element (or network.operator in the language of ObsPy).
-Alternatively, you may add the "--dont_validate" flag so that the code
-does not try to validate the xml against the 1.0 FDSN schema.
-
-
-## More Examples
-
-Plot channel responses:
-  The following will create response plots for each channel of station
-WES and output them to the ./plot directory:
-
-    >yasmine-cli --level_station=*.WES --infile=data/NE.xml --plot_resp --plot_dir=zplot
-
-(the default --plot_dir is ".")
-
-Note that if --level_{network, station} is not specified, it will output plots of ALL channel responses.
-
-The following will pull only xml related to one station (LJS1) and output to foo.xml:
-
-    >yasmine-cli --infile=PRSMP-2020-04-01.xml -o foo.xml --level_station=*.LJS1
-
-This could be used, for instance, to break up a network stationXML into smaller station stationXML files.
-
-Note that the behavior is different if you specify --field and --value.
-For instance, a similar command changes the station code from LJS1 to LJXX but outputs all stations
-to the file foo.xml:
-
-    >yasmine-cli --infile=PRSMP-2020-04-01.xml -o foo.xml --level_station=*.LJS1 --field=code --value='LJXX'
-
-That is, these are 2 different actions, which could be explicitly specified on the command line:
-
-    >yasmine-cli --action=select --infile=PRSMP-2020-04-01.xml -o foo.xml --level_station=*.LJS1
-    >yasmine-cli --action=update --infile=PRSMP-2020-04-01.xml -o foo.xml --level_station=*.LJS1 --field=code --value='LJXX'
-
-However, --action is not required in these cases since yasmine-cli will try to figure it out from the other params present.
-
-##### Piping example:
-
-  This example 1) Changes all ANMO station codes to 'MIKE', 2) Changes the
-  latitude of all CCM stations to 33.77, 3) Adds list of operators to all
-  MIKE stations, and 4) Replaces the 2nd operator in the list with a new
-  operator from yml file:
-
-      >cat TestX.xml | yasmine-cli --field=code --value=MIKE --level_station=*.ANMO --dont_validate | \
-        yasmine-cli --field=latitude --value=33.77 --level_station=*.CCM | \
-        yasmine-cli --field=operators --value=yml:yml/operators.yml --level_station=*.MIKE | \
-        yasmine-cli --field=operators[1] --value=yml:yml/operator.yml --level_station=*.MIKE -o y.xml
-
-  Note that when piping together executables as in: >run_A | run_B | run_C ,
-  the OS does *not* run the executables in sequential order.
-  e.g., it does not first run_A, then run_B, etc.
-  Instead, all executables are essentially started at the same time and
-  their inputs/outputs joined  by the pipes.
-  While the end result will be as expected, the logfile may contain messages that
-  appear to be out of order because of how shell piping works.
-  e.g., you may see the messages for run_B *before* the messages for run_A.
-
-
-##### Add a new Network
-
-      >yasmine-cli --infiles=test.xml -o x.xml --action=add --from_yml=yml/network.yml --dont_validate
-
-##### Set all Network code(s)
-
-      >yasmine-cli --infiles=test.xml -o x.xml --field=code --value='XY' --level_network=*
-
-##### Add a list operators = [Operator] (from yaml file) to this Network:
-
-      >yasmine-cli --infiles=x.xml -o y.xml --field=operators --value=yml:yml/operators.yml --level_network=XY
-
-##### Append a scalar Operator to this operators list (note operator.yml contains one Operator):
-
-      >yasmine-cli --infiles=y.xml -o z.xml --field=operators --value=yml:yml/operator.yml --level_network=XY
-
-##### Replace the 2nd Operator with a new Operator (from yml):
-
-      >yasmine-cli  --infiles=z.xml -o a.xml --field=operators[1] --value=yml:yml/operator.yml --level_network=XY
-
-##### Delete the 1st Operator:
-
-      >yasmine-cli  --infiles=z.xml -o a.xml --field=operators[0] --value=None --level_network=XY
-
-##### Delete the entire operators list (note deleting a list is equivalent to setting it to the empty list []):
-
-      >yasmine-cli  --infiles=z.xml -o a.xml --field=operators --value=[] --level_network=XY
-
-##### Add an operator to every station in network 'IU'.
-
-      >yasmine-cli --infile=Test.xml --level_station=IU.* --action=add --from_yml=yml/operator.yml
-
-##### Append a comment to every IU.ANMO channel epoch.
-
-      >yasmine-cli --infile=TestX.xml --level_channel=*.ANMO.*.* --field=comments --value=yml:yml/comment.yml -o xx.xml 
-
-##### Update latitude on all II.ANMO station.
-
-      >yasmine-cli --infile=Test.xml --level_station=II.ANMO --field=latitude --value=75.12
-
-##### Update latitude on all II.ANMO channel epochs.
-
-      >yasmine-cli --infile=Test.xml --level_channel=II.ANMO.*.* --field=latitude --value=75.12
-
-##### Replace the 7th comment of the 128th channel epoch of the 5th station epoch with a comment from yaml file:
-
-    >yasmine-cli --infiles=resources/ANMO.xml -o z.xml --field=comments[6] --value=yml:yml/comment.yml --level_channel=*.ANMO.10.VHZ --epoch_channel=128 --epoch_station=5
-
-##### Delete the 3rd comment of the 128th channel epoch of the 5th station epoch:
-
-    >yasmine-cli --infiles=resources/ANMO.xml -o z.xml --field=comments[6] --value=yml:yml/comment.yml --level_channel=*.ANMO.10.VHZ --epoch_channel=128 --epoch_station=5
-
-##### If you need help figuring out how the station/channel epochs are numbered in your StationXML file:
-
-    >yasmine-cli --infiles=test_data/ANMO.xml -p           // Print out epochs
-
-```[File:test_data/ANMO.xml]
-  [Net:IU]
-    [Stn:ANMO] epoch[0]:1989-08-29T00:00:00.000000Z - 1995-07-14T00:00:00.000000Z
-      [Chn:BCI.--] epoch[0]:1989-08-29T00:00:00.000000Z - 1995-02-01T00:00:00.000000Z
-      [Chn:BCI.--] epoch[1]:1995-02-01T00:00:00.000000Z - 1995-07-14T00:00:00.000000Z
-      [Chn:BH1.--] epoch[2]:1995-03-28T21:15:00.000000Z - 1995-07-14T00:00:00.000000Z
-      [Chn:BH2.--] epoch[3]:1995-03-28T21:15:00.000000Z - 1995-07-14T00:00:00.000000Z
-      [Chn:BHE.--] epoch[4]:1989-08-29T00:00:00.000000Z - 1991-01-23T22:25:00.000000Z
-      [Chn:BHE.--] epoch[5]:1991-01-23T22:25:00.000000Z - 1991-02-11T20:48:00.000000Z
-      [Chn:BHE.--] epoch[6]:1991-02-11T20:48:00.000000Z - 1995-02-01T00:00:00.000000Z
-      .
-      .
-      .
-      [Chn:VWS.--] epoch[119]:1992-07-17T00:00:00.000000Z - 1995-02-01T00:00:00.000000Z
-      [Chn:VWS.--] epoch[120]:1995-02-01T00:00:00.000000Z - 1995-07-14T00:00:00.000000Z
-    [Stn:ANMO] epoch[1]:1995-07-14T00:00:00.000000Z - 2000-10-19T16:00:00.000000Z
-      [Chn:BCI.--] epoch[0]:1995-07-14T00:00:00.000000Z - 1998-10-26T20:00:00.000000Z
-      [Chn:BH1.--] epoch[1]:1995-07-14T00:00:00.000000Z - 1996-07-16T16:00:00.000000Z
-      [Chn:BH1.--] epoch[2]:1996-07-29T00:00:00.000000Z - 1997-04-09T16:00:00.000000Z
-      [Chn:BH1.--] epoch[3]:1997-04-09T16:00:00.000000Z - 1998-10-26T20:00:00.000000Z
-      .
-      .
-      .
-```

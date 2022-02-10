@@ -13,7 +13,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/mhagerty/yasmine-cli/issues.
+Report bugs at https://github.com/iris-edu/yasmine-stationxml-cli/issues.
 
 If you are reporting a bug, please include:
 
@@ -42,7 +42,7 @@ or even on the web in blog posts, articles, and such.
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/mhagerty/yasmine-cli/issues.
+The best way to send feedback is to file an issue at https://github.com/iris-edu/yasmine-stationxml-cli/issues.
 
 If you are proposing a feature:
 
@@ -101,4 +101,3 @@ Before you submit a pull request, check that it meets these guidelines:
 3. The pull request should work for Python 2.7, 3.3, 3.4, 3.5 and for PyPy. Check
    https://travis-ci.org/mhagerty/yasmine-cli/pull_requests
    and make sure that the tests pass for all supported Python versions.
-
