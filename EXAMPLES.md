@@ -13,7 +13,7 @@ To understand how this affects the code, consider what happens when we
 try to assign --field=operator to a network element when the input
 StationXML version=1.0:
 
-    (yasmine) mth@Mikes-MBP [~/mth/python_pkgs/yasmine-cli]> yasmine-cli --infiles=data/NE.xml --field=operators --value=yml:yml/operators.yml --level_network=* --schema_version=1.0 -o x.xml
+    (yasmine) mth@Mikes-MBP [~/mth/python_pkgs/yasmine-cli]> yasmine-cli --infiles=tests/test_data/NE.xml --field=operators --value=yml:yml/operators.yml --level_network='*' --schema_version=1.0 -o x.xml
     2020-03-19 15:00:00,766 [ INFO] Input schema_version=1.0
     2020-03-19 15:00:00,766 [ INFO] Input files version:[1.0] --> Request output version:[1.0]
     2020-03-19 15:00:00,766 [ INFO] Check file:data/NE.xml against schema_file:fdsn-schema/fdsn-station-1.0.xsd
@@ -36,7 +36,7 @@ should.
 The solution, if we want network.operator, is to specify that the output
 schema version shall be 1.1:
 
-    (yasmine) mth@Mikes-MBP [~/mth/python_pkgs/yasmine-cli]> yasmine-cli --infiles=data/NE.xml --field=operators --value=yml:yml/operators.yml --level_network=* --schema_version=1.1 -o x.xml
+    (yasmine) mth@Mikes-MBP [~/mth/python_pkgs/yasmine-cli]> yasmine-cli --infiles=tests/test_data/NE.xml --field=operators --value=yml:yml/operators.yml --level_network='*' --schema_version=1.1 -o x.xml
     2020-03-19 14:59:38,643 [ INFO] Input schema_version=1.0
     2020-03-19 14:59:38,643 [ INFO] Input files version:[1.0] --> Request output version:[1.1]
     2020-03-19 14:59:38,643 [ INFO] Check file:data/NE.xml against schema_file:fdsn-schema/fdsn-station-1.1.xsd
@@ -51,7 +51,7 @@ does not try to validate the xml against the 1.0 FDSN schema.
   The following will create response plots for each channel of station
 WES and output them to the ./plot directory:
 
-    >yasmine-cli --level_station=*.WES --infile=data/NE.xml --plot_resp --plot_dir=zplot
+    >yasmine-cli --level_station='*.WES' --infile=tests/test_data/NE.xml --plot_resp --plot_dir=zplot
 
 (the default --plot_dir is ".")
 
@@ -59,7 +59,7 @@ Note that if --level_{network, station} is not specified, it will output plots o
 
 The following will pull only xml related to one station (LJS1) and output to foo.xml:
 
-    >yasmine-cli --infile=PRSMP-2020-04-01.xml -o foo.xml --level_station=*.LJS1
+    >yasmine-cli --infile=tests/test_data/PRSMP-2020-04-01.xml -o foo.xml --level_station=*.LJS1
 
 This could be used, for instance, to break up a network stationXML into smaller station stationXML files.
 
@@ -67,12 +67,12 @@ Note that the behavior is different if you specify --field and --value.
 For instance, a similar command changes the station code from LJS1 to LJXX but outputs all stations
 to the file foo.xml:
 
-    >yasmine-cli --infile=PRSMP-2020-04-01.xml -o foo.xml --level_station=*.LJS1 --field=code --value='LJXX'
+    >yasmine-cli --infile=tests/test_data/PRSMP-2020-04-01.xml -o foo.xml --level_station=*.LJS1 --field=code --value='LJXX'
 
 That is, these are 2 different actions, which could be explicitly specified on the command line:
 
-    >yasmine-cli --action=select --infile=PRSMP-2020-04-01.xml -o foo.xml --level_station=*.LJS1
-    >yasmine-cli --action=update --infile=PRSMP-2020-04-01.xml -o foo.xml --level_station=*.LJS1 --field=code --value='LJXX'
+    >yasmine-cli --action=select --infile=tests/test_data/PRSMP-2020-04-01.xml -o foo.xml --level_station=*.LJS1
+    >yasmine-cli --action=update --infile=tests/test_data/PRSMP-2020-04-01.xml -o foo.xml --level_station=*.LJS1 --field=code --value='LJXX'
 
 However, --action is not required in these cases since yasmine-cli will try to figure it out from the other params present.
 
@@ -83,10 +83,10 @@ However, --action is not required in these cases since yasmine-cli will try to f
   MIKE stations, and 4) Replaces the 2nd operator in the list with a new
   operator from yml file:
 
-      >cat TestX.xml | yasmine-cli --field=code --value=MIKE --level_station=*.ANMO --dont_validate | \
-        yasmine-cli --field=latitude --value=33.77 --level_station=*.CCM | \
-        yasmine-cli --field=operators --value=yml:yml/operators.yml --level_station=*.MIKE | \
-        yasmine-cli --field=operators[1] --value=yml:yml/operator.yml --level_station=*.MIKE -o y.xml
+      >cat TestX.xml | yasmine-cli --field=code --value=MIKE --level_station='*.ANMO' --dont_validate | \
+        yasmine-cli --field=latitude --value=33.77 --level_station='*.CCM' | \
+        yasmine-cli --field=operators --value=yml:yml/operators.yml --level_station='*.MIKE' | \
+        yasmine-cli --field=operators[1] --value=yml:yml/operator.yml --level_station='*.MIKE' -o y.xml
 
   Note that when piping together executables as in: >run_A | run_B | run_C ,
   the OS does *not* run the executables in sequential order.
@@ -128,11 +128,11 @@ However, --action is not required in these cases since yasmine-cli will try to f
 
 ##### Add an operator to every station in network 'IU'.
 
-      >yasmine-cli --infile=Test.xml --level_station=IU.* --action=add --from_yml=yml/operator.yml
+      >yasmine-cli --infile=Test.xml --level_station='IU.*' --action=add --from_yml=yml/operator.yml
 
 ##### Append a comment to every IU.ANMO channel epoch.
 
-      >yasmine-cli --infile=TestX.xml --level_channel=*.ANMO.*.* --field=comments --value=yml:yml/comment.yml -o xx.xml
+      >yasmine-cli --infile=TestX.xml --level_channel='*.ANMO.*.*' --field=comments --value=yml:yml/comment.yml -o xx.xml
 
 ##### Update latitude on all II.ANMO station.
 
@@ -140,19 +140,19 @@ However, --action is not required in these cases since yasmine-cli will try to f
 
 ##### Update latitude on all II.ANMO channel epochs.
 
-      >yasmine-cli --infile=Test.xml --level_channel=II.ANMO.*.* --field=latitude --value=75.12
+      >yasmine-cli --infile=Test.xml --level_channel='II.ANMO.*.*' --field=latitude --value=75.12
 
 ##### Replace the 7th comment of the 128th channel epoch of the 5th station epoch with a comment from yaml file:
 
-    >yasmine-cli --infiles=resources/ANMO.xml -o z.xml --field=comments[6] --value=yml:yml/comment.yml --level_channel=*.ANMO.10.VHZ --epoch_channel=128 --epoch_station=5
+    >yasmine-cli --infiles=resources/ANMO.xml -o z.xml --field=comments[6] --value=yml:yml/comment.yml --level_channel='*.ANMO.10.VHZ' --epoch_channel=128 --epoch_station=5
 
 ##### Delete the 3rd comment of the 128th channel epoch of the 5th station epoch:
 
-    >yasmine-cli --infiles=resources/ANMO.xml -o z.xml --field=comments[6] --value=yml:yml/comment.yml --level_channel=*.ANMO.10.VHZ --epoch_channel=128 --epoch_station=5
+    >yasmine-cli --infiles=resources/ANMO.xml -o z.xml --field=comments[6] --value=yml:yml/comment.yml --level_channel='*.ANMO.10.VHZ' --epoch_channel=128 --epoch_station=5
 
 ##### If you need help figuring out how the station/channel epochs are numbered in your StationXML file:
 
-    >yasmine-cli --infiles=test_data/ANMO.xml -p           // Print out epochs
+    >yasmine-cli --infiles=tests/test_data/ANMO.xml -p           // Print out epochs
 
 ```[File:test_data/ANMO.xml]
   [Net:IU]
